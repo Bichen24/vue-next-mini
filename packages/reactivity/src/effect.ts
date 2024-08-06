@@ -1,9 +1,12 @@
+import { CopmputedRefImpl } from './computed'
 import { createDep, Dep } from './dep'
 import { isArray } from './share'
 
 type KeyToDepMap = Map<any, Dep>
 //依赖数据结构 WeekMap<被代理对象,<被代理对象属性，使用属性的方法[]>>
 const targetMap = new WeakMap<any, KeyToDepMap>()
+//c-6-3 创建调度器类型
+export type EffectScheduler = (...args: any[]) => any
 
 /**
  * effect 函数
@@ -23,11 +26,19 @@ export function effect<T = any>(fn: () => T) {
 export let activeEffect: ReactiveEffect | undefined
 
 export class ReactiveEffect<T = any> {
-  constructor(public fn: () => T) {}
+  /**
+   *  c-5 存在该属性，则表示当前的 effect 为计算属性的 effect
+   */
+  computed?: CopmputedRefImpl<T>
+  constructor(
+    public fn: () => T,
+    //c-6-3收集调度器执行函数
+    public scheduler: EffectScheduler | null = null
+  ) {}
   run() {
     // 为 activeEffect 赋值
     activeEffect = this
-    this.fn()
+    return this.fn()
   }
 }
 /**
@@ -61,8 +72,20 @@ export function triggerEffects(dep: Dep) {
   // 把 dep 构建为一个数组
   const effects = isArray(dep) ? dep : [...dep]
   // 依次触发
+  // for (const effect of effects) {
+  // 	triggerEffect(effect)
+  // }
+
+  // 不在依次触发，而是先触发所有的计算属性依赖，再触发所有的非计算属性依赖
   for (const effect of effects) {
-    triggerEffect(effect)
+    if (effect.computed) {
+      triggerEffect(effect)
+    }
+  }
+  for (const effect of effects) {
+    if (!effect.computed) {
+      triggerEffect(effect)
+    }
   }
 }
 
@@ -70,7 +93,14 @@ export function triggerEffects(dep: Dep) {
  * 触发指定的依赖
  */
 export function triggerEffect(effect: ReactiveEffect) {
-  effect.run()
+  //c-6-4 存在调度器就执行调度函数 更新数据
+  if (effect.scheduler) {
+    effect.scheduler()
+  }
+  // 否则直接执行 run 函数即可
+  else {
+    effect.run()
+  }
 }
 
 /**

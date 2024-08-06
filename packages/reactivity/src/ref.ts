@@ -72,7 +72,7 @@ class RefImpl<T> {
 /**
  * 为 ref 的 value 进行依赖收集工作
  */
-export function trackRefValue(ref: RefImpl<any>) {
+export function trackRefValue(ref) {
   if (activeEffect) {
     trackEffects(ref.dep || (ref.dep = createDep()))
   }
@@ -81,7 +81,7 @@ export function trackRefValue(ref: RefImpl<any>) {
 /**
  * 为 ref 的 value 进行触发依赖工作
  */
-export function triggerRefValue(ref: RefImpl<any>) {
+export function triggerRefValue(ref) {
   if (ref.dep) {
     triggerEffects(ref.dep)
   }

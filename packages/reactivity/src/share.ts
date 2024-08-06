@@ -7,3 +7,6 @@ export function isObject(value: any): boolean {
 export function hasChanged(v1, v2): boolean {
   return !Object.is(v1, v2)
 }
+export function isFunction(fn): boolean {
+  return typeof fn === 'function'
+}
