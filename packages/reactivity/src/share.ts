@@ -1,5 +1,5 @@
 export function isArray(item: any): boolean {
-  return item instanceof Array
+  return item instanceof Array && typeof item === 'object'
 }
 export function isObject(value: any): boolean {
   return typeof value === 'object' && value !== null

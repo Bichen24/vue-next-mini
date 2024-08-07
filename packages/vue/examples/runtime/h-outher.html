@@ -9,15 +9,11 @@
   <body></body>
 </html>
 <script>
-  const { h, Text, Fragment, Comment } = Vue
-
-  const vnode = h(
-    'Text',
-    {
-      class: 'test'
-    },
-    'hello render'
-  )
-
+  const { h, Text, Comment, Fragment } = Vue
+  const vnode = h(Text, 'hello render')
   console.log(vnode)
+  const vnode1 = h(Comment, 'hello render')
+  console.log(vnode1)
+  const vnode2 = h(Fragment, 'hello render')
+  console.log(vnode2)
 </script>

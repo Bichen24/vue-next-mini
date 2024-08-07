@@ -7,17 +7,12 @@
   </head>
   <script src="../../dist/vue.js"></script>
   <body></body>
+  <script>
+    const { h } = Vue
+    const component = {
+      render() {
+        return h('div', {}, 'hello')
+      }
+    }
+  </script>
 </html>
-<script>
-  const { h, Text, Fragment, Comment } = Vue
-
-  const vnode = h(
-    'Text',
-    {
-      class: 'test'
-    },
-    'hello render'
-  )
-
-  console.log(vnode)
-</script>

@@ -2,6 +2,7 @@ import { isArray, isObject } from 'packages/reactivity/src/share'
 import { isVNode, VNode } from './vnode'
 import { isFunction, isString } from '@vue/shared'
 import { ShapeFlags } from 'packages/shared/src/shapeFlags'
+import { normalizeClass } from 'packages/shared/src/normalizeProps'
 
 export function h(type: any, propOrChildren?: any, children?: any) {
   const l = arguments.length
@@ -29,9 +30,21 @@ export function h(type: any, propOrChildren?: any, children?: any) {
   }
 }
 export function createVNode(type, props, children): VNode {
+  if (props) {
+    // 处理 class
+    let { class: klass, style } = props
+    if (klass && !isString(klass)) {
+      props.class = normalizeClass(klass)
+    }
+  }
+
   // 通过 bit 位处理 shapeFlag 类型
   // 获取当前VNode主节点的类(Element\Component\...)型便于后续计算
-  const shapeFlag = isString(type) ? ShapeFlags.ELEMENT : 0
+  const shapeFlag = isString(type)
+    ? ShapeFlags.ELEMENT
+    : isObject(type) //判断是否为组件 组件是一个带有render方法的对象传递进render函数 本质上是一个vnode对象
+    ? ShapeFlags.STATEFUL_COMPONENT
+    : 0
   return createBaseVNode(type, props, children, shapeFlag)
 }
 export function createBaseVNode(type, props, children, shapeFlag) {
