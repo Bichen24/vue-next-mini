@@ -11,6 +11,15 @@ export const nodeOps = {
     const el = doc.createElement(tag)
     return el
   },
+  /**
+   * 删除指定元素
+   */
+  remove: child => {
+    const parent = child.parentNode
+    if (parent) {
+      parent.removeChild(child)
+    }
+  },
   /*** 为指定的 element 设置 textContent*/
   setElementText: (el, text) => {
     el.textContent = text

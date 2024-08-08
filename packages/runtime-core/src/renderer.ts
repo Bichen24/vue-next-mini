@@ -1,5 +1,5 @@
 import { ShapeFlags } from 'packages/shared/src/shapeFlags'
-import { Comment, Fragment, Text } from './vnode'
+import { Comment, Fragment, isSameVNodeType, Text } from './vnode'
 import { isString } from '@vue/shared'
 import { normalizeVNode } from './componentRenderUtils'
 
@@ -12,6 +12,8 @@ export interface RendererOptions {
   insert(el, parent: Element, anchor?): void
   /*** 创建指定的 Element*/
   createElement(type: string)
+  /*** 卸载指定dom*/
+  remove(el): void
   /*** 创建 Text 节点*/
   createText(text: string)
   /*** 设置 text*/
@@ -34,8 +36,12 @@ function baseCreateRenderer(options: RendererOptions): any {
     setElementText: hostSetElementText,
     createText: hostCreateText,
     setText: hostSetText,
-    createComment: hostCreateComment
+    createComment: hostCreateComment,
+    remove: hostRemove
   } = options
+  const unmount = vnode => {
+    hostRemove(vnode.el!)
+  }
   /**
    * Element 的打补丁操作
    */
@@ -116,7 +122,7 @@ function baseCreateRenderer(options: RendererOptions): any {
   }
 
   /**
-   * 挂载子节点
+   * 挂载Fragmemt子节点
    */
   const mountChildren = (children, container, anchor) => {
     // 处理 Cannot assign to read only property '0' of string 'xxx'
@@ -217,6 +223,13 @@ function baseCreateRenderer(options: RendererOptions): any {
     if (oldVNode === newVNode) {
       return
     }
+    /**
+     * 判断是否为相同类型节点
+     */
+    if (oldVNode && !isSameVNodeType(oldVNode, newVNode)) {
+      unmount(oldVNode)
+      oldVNode = null
+    }
     const { type, shapeFlag } = newVNode
     switch (type) {
       case Text:
@@ -240,9 +253,15 @@ function baseCreateRenderer(options: RendererOptions): any {
         }
     }
   }
+  //render函数入口
   const render = (vnode, container) => {
+    // 不存在新的 vnode 时
     if (vnode == null) {
-      // TODO: 卸载
+      // 但是存在旧的 vnode
+      if (container._vnode) {
+        // 则直接执行卸载操作
+        unmount(container._vnode)
+      }
     } else {
       // 打补丁（包括了挂载和更新）
       patch(container._vnode || null, vnode, container)

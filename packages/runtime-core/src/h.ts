@@ -42,7 +42,7 @@ export function createVNode(type, props, children): VNode {
   // 获取当前VNode主节点的类(Element\Component\...)型便于后续计算
   const shapeFlag = isString(type)
     ? ShapeFlags.ELEMENT
-    : isObject(type) //判断是否为组件 组件是一个带有render方法的对象传递进render函数 本质上是一个vnode对象
+    : isObject(type) //判断是否为组件 组件是一个带有 render方法的对象传递进 render 函数 本质上是一个vnode对象
     ? ShapeFlags.STATEFUL_COMPONENT
     : 0
   return createBaseVNode(type, props, children, shapeFlag)
